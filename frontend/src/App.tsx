@@ -1,4 +1,5 @@
 import "./App.css";
+import FirstPageBody from "./Components/FirstPageBody";
 import Header from "./Components/Header";
 
 function App() {
@@ -7,6 +8,7 @@ function App() {
   return (
     <>
       <Header />
+      <FirstPageBody />
     </>
   );
 }
