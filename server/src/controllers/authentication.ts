@@ -1,10 +1,12 @@
-import {  createUser, getUserByEmail } from 'db/user';
+import {  createUser, getUserByEmail } from '../db/user';
 import express from 'express';
-import { authentication, random } from 'helpers';
+import { authentication, random } from '../helpers/index';
 
 export const register =async (req:express.Request,res:express.Response) => {
+    console.log("In the register function")
     try {
         const {username,email ,password} = req.body;
+        console.log({username,email,password})
         if(!username || !email || !password){
             res.status(400).send("All the fields are required");
             return;
@@ -23,11 +25,12 @@ export const register =async (req:express.Request,res:express.Response) => {
             }
 
         })
+        console.log("Creating User")
         res.status(200).json(user).end()
 
         
     } catch (error) {
-        console.error(error);
+        console.log(error);
         res.status(400).send("Something wrong with the register api .")
     }
 }

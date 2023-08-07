@@ -5,6 +5,8 @@ import cookieparser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
 import mongoose from 'mongoose'
+// import router from 'router';
+import router from "./router"
 
 const app = express();
 app.use(cors({
@@ -16,7 +18,7 @@ app.use(cookieparser());
 app.use(bodyparser.json());
 const server = http.createServer(app);
 server.listen(8080 , ()=>{
-    console.log("Server running on port 8080")
+    console.log("Server running on port 8080");
 })
 const MONGO_URL ="mongodb+srv://anandpandey1052:rel40417@cluster0.pxvoj5v.mongodb.net/?retryWrites=true&w=majority"
 
@@ -34,3 +36,4 @@ mongoose.connection.on('error', (error: Error) => {
 mongoose.connection.on('disconnected', () => {
     console.log('MongoDB disconnected.');
 });
+app.use('/', router());
