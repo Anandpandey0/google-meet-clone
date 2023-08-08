@@ -3,8 +3,12 @@ import { AiOutlineQuestionCircle, AiOutlineSetting } from "react-icons/ai";
 import { PiSealWarningBold } from "react-icons/pi";
 import { IoMdApps } from "react-icons/io";
 import { RxAvatar } from "react-icons/rx";
+// import {useHistory} from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
 
 const Header: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
     <nav className=" p-2 h-20 flex justify-between items-center select-none">
       <div className="image-container  sm:flex items-center align-middle hidden px-4 z-0 ">
@@ -31,9 +35,12 @@ const Header: React.FC = () => {
         <div className="rounded-full lg:ml-8 w-fit h-full p-2 hover:bg-gray-300 cursor-pointer">
           <IoMdApps size={25} />
         </div>
-        <div className="rounded-full w-fit h-full p-2 hover:bg-gray-300 cursor-pointer">
+        <button
+          className="rounded-full w-fit h-full p-2 hover:bg-gray-300 cursor-pointer"
+          onClick={() => navigate("/login")}
+        >
           <RxAvatar size={25} />
-        </div>
+        </button>
       </div>
     </nav>
   );

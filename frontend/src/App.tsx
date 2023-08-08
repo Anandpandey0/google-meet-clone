@@ -1,14 +1,13 @@
 import "./App.css";
-import FirstPageBody from "./Components/FirstPageBody";
-import Header from "./Components/Header";
+
+import AppRouter from "./router/AppRouter";
 
 function App() {
   // const [count, setCount] = useState(0)
 
   return (
     <>
-      <Header />
-      <FirstPageBody />
+      <AppRouter />
     </>
   );
 }
