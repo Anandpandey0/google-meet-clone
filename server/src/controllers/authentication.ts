@@ -23,12 +23,12 @@ export const login = async (req:express.Request , res: express.Response) =>{
       
           await user.save();
       
-          res.cookie('Google-meet-auth', user.authentication.sessionToken, { domain: 'localhost', path: '/' });
+          res.cookie('Google-Meet-Auth', user.authentication.sessionToken, { domain: 'localhost', path: '/' });
           console.log("User Logged in")
           return res.status(200).json(user).end();
     } catch (error) {
         console.error(error);
-        res.status(400).send("Some error happended in login api")
+        res.status(400).send("Some error happended in login api")  
     }
 }
 
@@ -36,7 +36,7 @@ export const register =async (req:express.Request,res:express.Response) => {
     // console.log("In the register function")
     try {
         const {username,email ,password} = req.body;
-        console.log({username,email,password})
+        // console.log({username,email,password})
         if(!username || !email || !password){
             res.status(400).send("All the fields are required");
             return;
@@ -55,8 +55,11 @@ export const register =async (req:express.Request,res:express.Response) => {
             }
 
         })
-        console.log("Creating User")
-        res.status(200).json(user).end()
+        res.status(200).json({
+            message: "User is created",
+            email: email,     
+            username: username 
+        });
 
         
     } catch (error) {
