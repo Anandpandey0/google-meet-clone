@@ -5,8 +5,9 @@ import cookieparser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
 import mongoose from 'mongoose'
-// import router from 'router';
 import router from "./router"
+
+import { Server } from "socket.io";
 
 const app = express();
 app.use(cors({
@@ -37,3 +38,28 @@ mongoose.connection.on('disconnected', () => {
     console.log('MongoDB disconnected.');
 });
 app.use('/', router());
+const io = new Server(8000, {
+    cors: {
+      origin: "http://localhost:5173", // Set the allowed origin
+      credentials: true,
+    },
+});
+const emailToSocketIdMap = new Map();
+const socketidToEmailMap = new Map();
+
+io.on("connection",(socket)=>{
+    socket.emit('hello','world');
+    // socket.on("howdy",(arg)=>{
+    //     console.log(arg);
+    // })
+    socket.on('room-join',(data)=>{
+        // console.log(data)
+        const { userInfo, room } = data;
+        const email = userInfo?.email;
+        emailToSocketIdMap.set(email, socket.id);
+        socketidToEmailMap.set(socket.id, email);
+        io.to(room).emit("user-joined", { email, id: socket.id });
+        socket.join(room);
+        io.to(socket.id).emit("room-join", data);
+    })
+})

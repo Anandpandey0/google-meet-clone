@@ -10,25 +10,27 @@ export const login = async (req:express.Request , res: express.Response) =>{
             
         }
         const user = await getUserByEmail(email).select('+authentication.salt +authentication.password');
-        if(!user){
-            return res.status(400).send("User is not registered");
-        }
-        const expectedHash = authentication(user.authentication.salt, password);
-        if (user.authentication.password != expectedHash) {
-            return res.sendStatus(403).send("Password is incorrect");
+        if (!user) {
+            return res.status(404).send("User is not registered");
           }
-      
+          
+          const expectedHash = authentication(user.authentication.salt, password);
+          if (user.authentication.password !== expectedHash) {
+            return res.status(403).send("Password is incorrect");
+          }
+          
           const salt = random();
           user.authentication.sessionToken = authentication(salt, user._id.toString());
-      
+          
           await user.save();
-      
+          
           res.cookie('Google-Meet-Auth', user.authentication.sessionToken, { domain: 'localhost', path: '/' });
-          console.log("User Logged in")
-          return res.status(200).json(user).end();
+          console.log("User Logged in");
+          return res.status(200).json(user); // Only send the response once here
+          
     } catch (error) {
         console.error(error);
-        res.status(400).send("Some error happended in login api")  
+        return res.status(400).send("Some error happended in login api")  
     }
 }
 
