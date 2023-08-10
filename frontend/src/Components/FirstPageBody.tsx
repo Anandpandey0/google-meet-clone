@@ -2,8 +2,30 @@ import { useState } from "react";
 import { AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
 import { BiVideoPlus } from "react-icons/bi";
 import { MdKeyboard } from "react-icons/md";
+import { generateRandom } from "./miscellaneous/generateRoomId";
+import { useNavigate } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import { loggedInUserInfoState } from "../recoil/authState";
+import { getSocketInstance } from "../recoil/socketState";
+// import { useSocket } from "./useSocket";
 
 const FirstPageBody: React.FC = () => {
+  const navigate = useNavigate();
+  const userInfo = useRecoilValue(loggedInUserInfoState);
+  const [room, setRoom] = useState<string>("");
+
+  // const [roomid, setRoomid] = useState<string>("");
+  const socket = getSocketInstance();
+
+  const createRoomHandler = () => {
+    const room = generateRandom();
+    socket.emit("room-join", {
+      room,
+      userInfo,
+    });
+    navigate(`/room/${room}`);
+    // console.log(userInfo);
+  };
   const contentArray = [
     {
       imgUrl:
@@ -48,18 +70,35 @@ const FirstPageBody: React.FC = () => {
     setHeading(contentArray[nextIndex].heading);
     setPara(contentArray[nextIndex].para);
   };
-
+  const handleRoomInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const input = event.target.value.replace(/-/g, ""); // Remove existing hyphens
+    const formattedInput = input.replace(/(.{3})/g, "$1-"); // Add hyphens every 3 characters
+    // console.log(formattedInput);
+    setRoom(formattedInput.slice(0, 11));
+  };
+  const handleRoomInput = () => {
+    if (!userInfo) {
+      navigate("/login");
+    } else {
+      navigate(`/room/${room}`);
+    }
+  };
   return (
     <main className=" lg:h-[70vh] flex flex-col   lg:p-20 select-none flex-wrap">
       <div className="left-body py-4 mx-auto w-2/3    mt-4 lg:w-1/2 px-4">
         <h1>Premium video meetings.</h1>
         <h1>Now free for everyone.</h1>
-        <p className="lg:w-1/2 mx-auto   mt-8 text-gray-600 font-medium">
+        <p className="lg:w-1/2 mx-auto lg:mx-0  mt-8 text-gray-600 font-medium">
           We re-engineered the service that we built for secure bisiness
           meetings, Google Meet, to make it free and available for all.
         </p>
         <div className="buttons-area flex  gap-2 flex-wrap  w-fit py-4 mt-8  ">
-          <button className="rounded-md w-38 h-12 px-2 bg-blue-500 text-white font-medium flex items-center gap-2 ">
+          <button
+            className="rounded-md w-38 h-12 px-2 bg-blue-500 text-white font-medium flex items-center gap-2 "
+            onClick={createRoomHandler}
+          >
             <BiVideoPlus size={25} />
             New Meeting{" "}
           </button>
@@ -72,8 +111,18 @@ const FirstPageBody: React.FC = () => {
               type="text"
               className="outline-none"
               placeholder="Enter a code or link"
+              value={room}
+              onChange={(e) => handleRoomInputChange(e)}
             />
           </div>
+          {room.length != 0 && (
+            <button
+              className="flex items-center ml-4  text-blue-600"
+              onClick={handleRoomInput}
+            >
+              Join
+            </button>
+          )}
         </div>
       </div>
       <div className="right-body w-2/3 mx-auto lg:w-1/2 ">
@@ -93,7 +142,7 @@ const FirstPageBody: React.FC = () => {
           </button>
         </div>
         <p className="text-center text-xl font-medium mt-4">{heading}</p>
-        <p className="text-center w-1/2 mx-auto mt-2">{para}</p>
+        <p className="text-center w-1/2 mx-auto mt-2">{para} </p>
       </div>
     </main>
   );
