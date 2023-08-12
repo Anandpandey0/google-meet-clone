@@ -43,7 +43,7 @@ const Register = () => {
   };
   return (
     <div className="flex justify-center items-center h-screen">
-      <div className="lg:h-[70vh] h-full w-full flex-wrap lg:w-[30vw] border-2 borde-solid   p-4 px-12 text-center flex flex-col ">
+      <div className="lg:h-min-[70vh] h-fit w-full flex-wrap lg:w-[30vw] border-2 borde-solid   p-4 px-12 text-center flex flex-col ">
         <div className="mx-auto w-fit pt-8">
           <svg
             viewBox="0 0 75 24"

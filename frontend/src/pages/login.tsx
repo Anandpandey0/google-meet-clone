@@ -79,7 +79,7 @@ const Login = () => {
 
   return (
     <div className="flex justify-center items-center h-screen">
-      <div className="lg:h-[70vh] h-full w-full flex-wrap lg:w-[30vw] border-2 borde-solid   p-4 px-12 text-center flex flex-col  ">
+      <div className="lg:h-min-[70vh] h-fit w-full flex-wrap lg:w-[30vw] border-2 borde-solid   p-4 px-12 text-center flex flex-col  ">
         <div className="mx-auto w-fit pt-8">
           <svg
             viewBox="0 0 75 24"
@@ -155,7 +155,7 @@ const Login = () => {
                 Learn more
               </span>
             </p>
-            <div className="flex justify-between my-auto">
+            <div className="flex justify-between my-auto flex-wrap">
               <a
                 className="text-blue-600 font-medium cursor-pointer"
                 onClick={() => navigate("/register")}
@@ -172,7 +172,7 @@ const Login = () => {
           </>
         ) : (
           <div>
-            <div className="flex w-full items-center text-center justify-between  mt-8">
+            <div className="flex w-full items-center  text-center justify-between  mt-8">
               <h3 className="font-semibold">Username:</h3>
               <h3 className="font-semibold">{userInfo?.username}</h3>
             </div>
