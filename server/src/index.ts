@@ -48,18 +48,19 @@ const emailToSocketIdMap = new Map();
 const socketidToEmailMap = new Map();
 
 io.on("connection",(socket)=>{
-    socket.emit('hello','world');
-    // socket.on("howdy",(arg)=>{
-    //     console.log(arg);
-    // })
+    socket.emit('socket-connect','socket is connected');
+   
     socket.on('room-join',(data)=>{
-        // console.log(data)
-        const { userInfo, room } = data;
-        const email = userInfo?.email;
+        console.log(data)
+        const { email, room } = data;
+        // const email = userInfo?.email;
         emailToSocketIdMap.set(email, socket.id);
         socketidToEmailMap.set(socket.id, email);
         io.to(room).emit("user-joined", { email, id: socket.id });
         socket.join(room);
         io.to(socket.id).emit("room-join", data);
+    })
+    socket.on('call-user',(data)=>{
+        console.log(data)
     })
 })
