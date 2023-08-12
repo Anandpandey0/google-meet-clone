@@ -11,3 +11,11 @@ export const loggedInUserInfoState = atom<UserInfo | null>({
   default: null,
 });
 
+export const saveUserInfoToLocalStorage = (userInfo: UserInfo | null) => {
+  try {
+    const userInfoJSON = JSON.stringify(userInfo);
+    localStorage.setItem('userInfo', userInfoJSON);
+  } catch (error) {
+    console.error('Error saving userInfo to localStorage:', error);
+  }
+};

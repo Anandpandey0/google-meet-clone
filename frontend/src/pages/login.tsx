@@ -14,10 +14,13 @@ const Login = () => {
 
   const [showLogin, setShowLogin] = useState<boolean>(true);
   useEffect(() => {
-    if (userInfo) {
+    const storedUserInfo = localStorage.getItem("userInfo");
+    if (storedUserInfo) {
+      const parsedUserInfo: UserInfo = JSON.parse(storedUserInfo);
       setShowLogin(false);
+      setLoggedInUserInfo(parsedUserInfo);
     }
-  }, [userInfo]);
+  }, [setLoggedInUserInfo]);
 
   const LoginUser = async () => {
     if (!email || !password) {
@@ -48,6 +51,7 @@ const Login = () => {
         };
         setLoggedInUserInfo(user);
         setShowLogin(false);
+
         // console.log(response.data.username);
         navigate("/");
       }

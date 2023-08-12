@@ -19,10 +19,7 @@ const FirstPageBody: React.FC = () => {
 
   const createRoomHandler = () => {
     const room = generateRandom();
-    socket.emit("room-join", {
-      room,
-      userInfo,
-    });
+
     navigate(`/room/${room}`);
     // console.log(userInfo);
   };
@@ -82,6 +79,10 @@ const FirstPageBody: React.FC = () => {
     if (!userInfo) {
       navigate("/login");
     } else {
+      socket.emit("room-join", {
+        room,
+        email: userInfo.email,
+      });
       navigate(`/room/${room}`);
     }
   };
