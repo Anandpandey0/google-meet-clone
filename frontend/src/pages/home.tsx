@@ -1,5 +1,7 @@
+import { useSetRecoilState } from "recoil";
 import FirstPageBody from "../Components/FirstPageBody";
 import Header from "../Components/Header";
+import { UserInfo, loggedInUserInfoState } from "../recoil/authState";
 import { getSocketInstance } from "../recoil/socketState";
 import { useEffect, useCallback } from "react";
 
@@ -10,6 +12,8 @@ interface backendData {
 
 const Home = () => {
   const socket = getSocketInstance();
+  const setLoggedInUserInfo = useSetRecoilState(loggedInUserInfoState);
+
   const handleJoinRoom = useCallback((data: backendData) => {
     const { email, room } = data;
     console.log(email, room);
@@ -25,13 +29,18 @@ const Home = () => {
       socket.off("room-join");
     };
   }, [socket, handleJoinRoom]);
-  useEffect;
-
-  // socket.emit("howdy", "Hello from frontend!");
+  useEffect(() => {
+    const storedUserInfo = localStorage.getItem("userInfo");
+    if (storedUserInfo) {
+      const parsedUserInfo: UserInfo = JSON.parse(storedUserInfo);
+      setLoggedInUserInfo(parsedUserInfo);
+    }
+  }, [setLoggedInUserInfo]);
   return (
     <>
       <Header />
       <FirstPageBody />
+      {/* {console.log(userInfo)} */}
     </>
   );
 };
