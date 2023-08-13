@@ -8,6 +8,7 @@ import mongoose from 'mongoose'
 import router from "./router"
 
 import { Server } from "socket.io";
+import { roomHandler } from './room/index';
 
 const app = express();
 app.use(cors({
@@ -21,6 +22,14 @@ const server = http.createServer(app);
 server.listen(8080 , ()=>{
     console.log("Server running on port 8080");
 })
+app.use('/', router());
+const io = new Server(server, {
+    cors: {
+      origin: "http://localhost:5173", // Set the allowed origin
+      credentials: true,
+    },
+});
+
 const MONGO_URL ="mongodb+srv://anandpandey1052:rel40417@cluster0.pxvoj5v.mongodb.net/?retryWrites=true&w=majority"
 
 mongoose.Promise = Promise;
@@ -37,30 +46,17 @@ mongoose.connection.on('error', (error: Error) => {
 mongoose.connection.on('disconnected', () => {
     console.log('MongoDB disconnected.');
 });
-app.use('/', router());
-const io = new Server(8000, {
-    cors: {
-      origin: "http://localhost:5173", // Set the allowed origin
-      credentials: true,
-    },
-});
-const emailToSocketIdMap = new Map();
-const socketidToEmailMap = new Map();
+
 
 io.on("connection",(socket)=>{
+    console.log("Connected with  backend socket")
     socket.emit('socket-connect','socket is connected');
+    roomHandler(socket)
    
-    socket.on('room-join',(data)=>{
-        console.log(data)
-        const { email, room } = data;
-        // const email = userInfo?.email;
-        emailToSocketIdMap.set(email, socket.id);
-        socketidToEmailMap.set(socket.id, email);
-        io.to(room).emit("user-joined", { email, id: socket.id });
-        socket.join(room);
-        io.to(socket.id).emit("room-join", data);
-    })
     socket.on('call-user',(data)=>{
         console.log(data)
+    })
+    socket.on('disconnect', ()=>{
+        console.log("Socket disconnected")
     })
 })
