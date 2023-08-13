@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
 import { BiVideoPlus } from "react-icons/bi";
 import { MdKeyboard } from "react-icons/md";
@@ -7,65 +7,77 @@ import { useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { loggedInUserInfoState } from "../recoil/authState";
 import { getSocketInstance } from "../recoil/socketState";
-// import { useSocket } from "./useSocket";
-
+import Peer from "peerjs";
+import { v4 as uuidV4 } from "uuid";
+import { contentArray } from "./miscellaneous/contentArray";
+import {
+  leftImageHandler,
+  rightImageHandler,
+} from "./miscellaneous/functions/imageHandlers";
 const FirstPageBody: React.FC = () => {
-  const navigate = useNavigate();
-  const userInfo = useRecoilValue(loggedInUserInfoState);
-  const [room, setRoom] = useState<string>("");
-
-  // const [roomid, setRoomid] = useState<string>("");
-  const socket = getSocketInstance();
-
-  const createRoomHandler = () => {
-    const room = generateRandom();
-
-    navigate(`/room/${room}`);
-    // console.log(userInfo);
-  };
-  const contentArray = [
-    {
-      imgUrl:
-        "https://www.gstatic.com/meet/user_edu_get_a_link_light_90698cd7b4ca04d3005c962a3756c42d.svg",
-      heading: "Get a link that you can share ",
-      para: "Click New meeting to get a link that you can send to people that you want to meet with",
-    },
-    {
-      imgUrl:
-        "https://www.gstatic.com/meet/user_edu_scheduling_light_b352efa017e4f8f1ffda43e847820322.svg",
-      heading: "Plan ahead ",
-      para: "Click New meeting to schedule meetings in Google Calender and send invitations to participants",
-    },
-    {
-      imgUrl:
-        "https://www.gstatic.com/meet/user_edu_safety_light_e04a2bbb449524ef7e49ea36d5f25b65.svg",
-      heading: "Your meeting is safe",
-      para: "No one can join a meeting unless invited or admitted by the host",
-    },
-  ];
   const [imgSrc, setImgSrc] = useState(contentArray[0].imgUrl);
   const [heading, setHeading] = useState(contentArray[0].heading);
   const [para, setPara] = useState(contentArray[0].para);
+  const navigate = useNavigate();
+  const userInfo = useRecoilValue(loggedInUserInfoState);
+  const [room, setRoom] = useState<string>("");
+  const [userPeerInfo, setUserPeerInfo] = useState<Peer | null>(null);
+  const socket = getSocketInstance();
 
-  const leftImageHandler = () => {
-    const currentIndex = contentArray.findIndex(
-      (item) => item.imgUrl === imgSrc
-    );
-    const prevIndex =
-      (currentIndex - 1 + contentArray.length) % contentArray.length;
-    setImgSrc(contentArray[prevIndex].imgUrl);
-    setHeading(contentArray[prevIndex].heading);
-    setPara(contentArray[prevIndex].para);
+  useEffect(() => {
+    if (userInfo) {
+      socket.on("room-created", (arg) => {
+        console.log("Room is created");
+        console.log("Data from Backend", arg);
+      });
+    }
+    return () => {
+      socket.off("room-created");
+    };
+  }, [room, socket, userInfo]);
+
+  const createRoomHandler = () => {
+    if (userInfo) {
+      const room = generateRandom();
+      const userId = uuidV4();
+      const peer = new Peer(userId);
+      setUserPeerInfo(peer);
+      socket.emit("create-room", {
+        email: userInfo.email,
+        room,
+      });
+      navigate(`/room/${room}`);
+    } else {
+      navigate("/login");
+    }
   };
 
-  const rightImageHandler = () => {
+  const handleLeftClick = () => {
     const currentIndex = contentArray.findIndex(
       (item) => item.imgUrl === imgSrc
     );
-    const nextIndex = (currentIndex + 1) % contentArray.length;
-    setImgSrc(contentArray[nextIndex].imgUrl);
-    setHeading(contentArray[nextIndex].heading);
-    setPara(contentArray[nextIndex].para);
+    const {
+      imgSrc: newImgSrc,
+      heading: newHeading,
+      para: newPara,
+    } = leftImageHandler(currentIndex, contentArray);
+    setImgSrc(newImgSrc);
+    setHeading(newHeading);
+    setPara(newPara);
+  };
+
+  const handleRightClick = () => {
+    const currentIndex = contentArray.findIndex(
+      (item) => item.imgUrl === imgSrc
+    );
+    const {
+      imgSrc: newImgSrc,
+      heading: newHeading,
+      para: newPara,
+    } = rightImageHandler(currentIndex, contentArray);
+    setImgSrc(newImgSrc);
+    setHeading(newHeading);
+    setPara(newPara);
   };
   const handleRoomInputChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -79,13 +91,32 @@ const FirstPageBody: React.FC = () => {
     if (!userInfo) {
       navigate("/login");
     } else {
-      socket.emit("room-join", {
+      const userId = uuidV4();
+      const peer = new Peer(userId);
+      setUserPeerInfo(peer);
+      socket.emit("create-room", {
         room,
         email: userInfo.email,
       });
       navigate(`/room/${room}`);
     }
   };
+
+  useEffect(() => {
+    const handleGetPeer = () => {
+      if (userPeerInfo) {
+        socket.emit("get-peer", {
+          userPeerInfo,
+        });
+      } else {
+        console.log("userPeerInfo is not available");
+      }
+    };
+    if (userPeerInfo) {
+      handleGetPeer();
+    }
+  }, [userPeerInfo, socket]);
+
   return (
     <main className=" lg:h-[70vh] flex flex-col   lg:p-20 select-none flex-wrap">
       <div className="left-body py-4 mx-auto w-2/3    mt-4 lg:w-1/2 px-4">
@@ -130,14 +161,14 @@ const FirstPageBody: React.FC = () => {
         <div className="flex items-center justify-center gap-4">
           <button
             className="hover:bg-gray-400 p-2 rounded-full"
-            onClick={leftImageHandler}
+            onClick={handleLeftClick}
           >
             <AiOutlineLeft />
           </button>
           <img src={imgSrc} alt="img-1" />
           <button
             className="hover:bg-gray-400  p-2 rounded-full"
-            onClick={rightImageHandler}
+            onClick={handleRightClick}
           >
             <AiOutlineRight />
           </button>

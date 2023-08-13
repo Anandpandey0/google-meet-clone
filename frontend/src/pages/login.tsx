@@ -14,6 +14,11 @@ const Login = () => {
 
   const [showLogin, setShowLogin] = useState<boolean>(true);
   useEffect(() => {
+    if (userInfo) {
+      setShowLogin(false);
+    }
+  }, [userInfo]);
+  useEffect(() => {
     const storedUserInfo = localStorage.getItem("userInfo");
     if (storedUserInfo) {
       const parsedUserInfo: UserInfo = JSON.parse(storedUserInfo);
@@ -21,6 +26,13 @@ const Login = () => {
       setLoggedInUserInfo(parsedUserInfo);
     }
   }, [setLoggedInUserInfo]);
+  const saveUserInfoToLocalStorage = (user: UserInfo) => {
+    localStorage.setItem("userInfo", JSON.stringify(user));
+  };
+
+  const removeUserInfoFromLocalStorage = () => {
+    localStorage.removeItem("userInfo");
+  };
 
   const LoginUser = async () => {
     if (!email || !password) {
@@ -51,6 +63,7 @@ const Login = () => {
         };
         setLoggedInUserInfo(user);
         setShowLogin(false);
+        saveUserInfoToLocalStorage(user);
 
         // console.log(response.data.username);
         navigate("/");
@@ -77,6 +90,7 @@ const Login = () => {
     }
   };
   const signoutHandler = () => {
+    removeUserInfoFromLocalStorage();
     setLoggedInUserInfo(null);
     setShowLogin(true);
   };

@@ -1,66 +1,27 @@
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { getSocketInstance } from "../recoil/socketState";
-import { useCallback, useEffect, useState } from "react";
-import ReactPlayer from "react-player";
+import { userPeerInfoState } from "../recoil/peerState";
+import { useRecoilValue } from "recoil";
 
-interface UserJoinedData {
-  email: string;
-  id: string; // or number, depending on the actual type
-}
+// interface UserJoinedData {
+//   email: string;
+//   id: string; // or number, depending on the actual type
+// }
 
 const Room: React.FC = () => {
   const { id } = useParams();
   const socket = getSocketInstance();
-  const [remoteSockeyId, setRemoteSocketId] = useState<string>("");
-  const [myStream, setMySteam] = useState<MediaStream | null>();
-  const handleUserJoined = useCallback(({ email, id }: UserJoinedData) => {
-    console.log(email, "joined the room,with id");
-    setRemoteSocketId(id);
-  }, []);
+  const userPeerInfo = useRecoilValue(userPeerInfoState);
   useEffect(() => {
-    socket.on("user-joined", ({ email, id }: UserJoinedData) => {
-      console.log(email, "joined the room,with id");
-      setRemoteSocketId(id);
-    });
-
-    return () => {
-      socket.off("user-joined", handleUserJoined);
-    };
-  }, [socket, handleUserJoined]);
-  const handleCallUser = useCallback(async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: true,
-    });
-    // const offer = getPeerConnection(socket);
-    // socket.emit("call-user", { to: remoteSockeyId, offer });
-    setMySteam(stream);
-    // console.log(stream);
-  }, []);
+    console.log("UserPeerInfo", userPeerInfo);
+    socket.emit("join-room", { room: id });
+  }, [id, socket, userPeerInfo]);
 
   return (
     <>
       <p>Room</p>
       <p>Room id: {id}</p>
-      <p>{remoteSockeyId ? "Connected" : "No one is in the room"}</p>
-      {remoteSockeyId && (
-        <button
-          className="border-2 border-solid border-black p-2 "
-          onClick={handleCallUser}
-        >
-          Call me{" "}
-        </button>
-      )}
-      {myStream && (
-        <ReactPlayer
-          url={myStream}
-          height="50vh"
-          width="50vw"
-          playing
-          muted={true}
-        />
-      )}
-      {myStream && <button onClick={() => setMySteam(null)}>End call</button>}
     </>
   );
 };
